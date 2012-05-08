@@ -1,0 +1,2 @@
+smart-value-object
+==================
