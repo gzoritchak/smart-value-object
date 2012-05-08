@@ -1,0 +1,17 @@
+
+
+<application>
+  <display-name>SVO Demo</display-name>
+
+    <module>
+      <web>
+        <web-uri>bsf-remote-server.war</web-uri>
+        <context-root>SvoDemo</context-root>
+      </web>
+    </module>
+
+  <module>
+    <ejb>SVO-jboss-demo.jar</ejb>
+  </module>
+
+</application>

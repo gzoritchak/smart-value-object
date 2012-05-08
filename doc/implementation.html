@@ -1,0 +1,197 @@
+<html>
+<head>
+<title>BSF Smart Value Object - implementation</title>
+<link rel="stylesheet" href="html.css" type="text/css">
+</head>
+<body>
+
+<h1><a name="implementation">Implementation</a></h1>
+
+<h2><a name="basic">Overview</a></h2>
+
+<p>As already mentioned, the modified classes implement the Versionable
+interface. This is done by adding a new field called version, which itselfs
+contains an object implementing Versionable. Calls to this interface directed
+to the outer object are delegated to this instance (for the moment of type <a
+href="javadoc/org/bsf/smartValueObject/Version.html">org.bsf.smartValueObject.Version</a>).
+
+<p>This technique is necessary to create a 'mixin' which has additional
+behaviour without using inheritance. The version field is actually initialized
+on object creation, in the constructor. It is not yet possible to specify an
+arbitrary class to be used as implementing class, but this would add further
+flexibility as custom implementations could specify additional behaviour.
+
+<p>Normally there is an 1:1 relation between a transfer object and its
+corresponding version object. But it's also possible to have a version object
+shared by serveral instances, so that a change in one object affects the state
+of the others (interesting for modeling child-parent relationships). For the
+moment the library uses a strict version-per-instance relationship.
+
+<p>The version object contains the state information of the transfer object
+(object modified / deleted / added). Additionally it contains a version number
+to allow version control. The current implementation uses a timestamp for this
+purpose.
+
+<p>The state transitions are controlled either by the transfer object itself,
+as every write access to a field is intercepted. If the type of the field to be
+written to is primitive or in the java.lang.* hierachy, the equals method is
+additionally invoked to verify that the field is really to be changed.
+Then, the version object's state changes to 'dirty'. But this really
+depends on the actual implementation of the Versionable interface, as it just
+gets informed that a field has been "touched".
+
+<p>The object state can also be changed with the helper class <a
+href="javadoc/org/bsf/smartValueObject/SmartAccess.html">SmartAccess</a>, to
+reset the state etc. This would normally happen on the server side, to reset
+any flags before sending the object to the client. The client shouldn't really
+have to care about the version state of the transfer objects.
+
+<p>To deal with collections, serveral wrapper classes have been created which
+intercept calls to the containers. To avoid using further bytecode
+manipulation, the classes are normal Java objects which are instantiated by the
+modified transfer objects:
+
+<pre>
+	Collection c = new ArrayList();
+</pre>
+
+is changed into:
+
+<pre>
+	Collection c = new SmartCollection(new ArrayList(), Versionable v);
+</pre>
+
+<p>The wrapper classes act as proxy to respect the versioning information
+contained in the objects:
+
+<pre>
+	Collection c = new ArrayList();
+	c.remove(anObject);
+</pre>
+
+<p>This will flag the object 'anObject' as deleted, if the object itself
+implements the Versionable interface. The class <a
+href="javadoc/org/bsf/smartValueObject/container/SmartIterator.html">SmartIterator</a>
+is used by the collections to provide a view on the objects which is identical
+to the normal, unmodified classes.
+
+
+<h2><a name="difference">Comparing Javassist - ASM</a></h2>
+
+<p>Let's see how the modification is actually done by comparing the two existing
+implementations:
+
+<table>
+<tr>
+<td width="50%">
+<pre>
+for (int i = 0; i < methods.length; i++) {
+CtMethod method = methods[i];
+StringBuffer body = new StringBuffer();
+if (method.getReturnType() != CtClass.voidType) {
+	body.append("return ");
+}
+
+// ($$) javassist specific macro (expanded to parameters)
+// field.methodname(1st parameter, 2nd parameter...)
+body.append(field.getName() + (".") + method.getName() + "($$);");
+
+// make new method using the signature of the interface's method
+// and the body defined above, add it to class
+CtMethod newMethod = CtNewMethod.make(
+		method.getReturnType(),
+		method.getName(),
+		method.getParameterTypes(),
+		method.getExceptionTypes(),
+		body.toString(),
+		declaring);
+declaring.addMethod(newMethod);
+}
+
+
+
+
+
+
+</pre>
+</td>
+<td width="50%"?
+<pre>
+for (int i = 0; i < methods.length; i++) {
+Method method = methods[i];
+String name = method.getName();
+// get exceptions
+// ... 
+String desc = Type.getMethodDescriptor(method);
+// create method signature
+CodeVisitor codevisitor = cv.visitMethod(ACC_PUBLIC,
+	name, desc, exceptions, null);
+// load 'this'
+codevisitor.visitVarInsn(ALOAD, 0);
+// get version field
+codevisitor.visitFieldInsn(GETFIELD,
+	getInternalName(),
+	VERSIONFIELD,
+	Type.getDescriptor(Versionable.class));
+
+// load parameters on operand stack
+// ...
+// invoke method on version field
+codevisitor.visitMethodInsn(INVOKEINTERFACE,
+	Type.getDescriptor(Versionable.class),
+	name,
+	desc);
+
+// return result to caller
+// ...
+}
+</pre>
+</td>
+</tr>
+</table>
+
+<p>The code shown on the left is the javassist way of doing modifications, on
+the right you have the ASM equivalent (shortened to be more readable).
+
+<p>Both do the same thing: implementing the Versionable interface by invoking
+the methods on the field 'version' of the object. Javassist lets you create a
+new method by a static factory CtMethod.newMethod(...), whereas with ASM you
+have to visit the class object first to create the method, then visit the
+method to create the instructions in a very low-level approach. The visitor
+pattern used by ASM allows for a very tight library size, but as a trade-off
+your code can get very complicated.
+
+<p>A nice feature of Javassist is its runtime compile mechanism: all you need
+to do is to create a string containing the code to be generated, Javassist
+then takes care of the rest.
+
+<p>In this example, the parameters of the original method are in a
+Javassist-specific variable '$$' which will be expanded on runtime to the
+complete list of parameters, just before the compilation step. 
+
+<p>On the other hand, with ASM you need to emit the bytecode yourself - you
+even need to deal with the differences between primitive and reference types.
+The problem is that the ASM implementation is getting unmaintable so we'll
+stick to the Javassist version for the moment. A solution would be to use <a
+href="http://cglib.sourceforge.net">cglib</a>, a library which adds a layer of
+abstraction to ASM to avoid these problems. This wouldn't buy a lot in terms of
+library size, as you can see in the table below.
+
+<p><table border="1">
+<tr> <th>Name</th><th>Version</th><th>License</th><th>Size</th> </tr>
+<tr> <td>ASM</td><td>1.4.1</td><td>BSD</td><td>25kb</td> </tr>
+<tr> <td>cglib</td><td>2.0beta</td><td>Apache</td><td>273kb</td> </tr>
+<tr> <td>Javassist</td><td>2.6</td><td>LGPL/MPL</td><td>312kb</td> </tr>
+</table>
+
+<hr/>
+<table width="100%">
+<tr>
+<td width="40%" align="left"><a href="mediators.html">back</a></td>
+<td width="20%" align="center"><a href="index.html">index</a></td>
+    <td width="40%" align="right"><a href="references.html">next</a></td>
+</tr>
+</table>
+
+</body>
+</html>

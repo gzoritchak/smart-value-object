@@ -1,0 +1,46 @@
+<html>
+<head>
+<title>BSF Smart Value Object - contents</title>
+<link rel="stylesheet" href="html.css" type="text/css">
+</head>
+<body>
+
+<h1>Overwiew</h1>
+
+<h2><a name="bigpicture">The big picture</a></h2>
+
+<p>If, after reading the <a href="introduction.html">introduction</a>, you're
+not quite sure about the purpose of the project, have a look at the diagram
+below:
+
+<center><img src="svo_diagram.png" alt="SVO digram"></center>
+
+<p>It shows a basic use case of the project: the client has a graph of objects
+(whether it was created locally or obtained from the server is not important
+for now) which it wants to change and save on the server. In this simple case
+we assume that it's not a real graph but a single object.
+
+<p>First it calls a method on this object: e.g. someObject.setName("foo"). As
+'someObject' is an instance of a 'smart' VO, it detects the change of state
+and updates its version information to 'modified'.
+
+<p>Then, when the user wants to save the data, it tells a component called
+<a href="mediators.html">mediator</a> to perform an update by calling 
+updateGraph(someObject) (step 2). This component will then verify that the
+object has been changed (step 3), and do the actual update (step 4).
+
+<p>The analysis of modifications can prove useful in a client/server scenario,
+where the state of the client must be synchronized with the server. By only
+sending modified objects the network traffic can be reduced drastically.
+
+<hr/>
+<table width="100%">
+<tr>
+    <td width="40%" align="left"><a href="introduction.html">back</a></td>
+    <td width="20%" align="center"><a href="index.html">index</a></td>
+    <td width="40%" align="right"><a href="instrumentation.html">next</a></td>
+</tr>
+</table>
+
+</body>
+</html>

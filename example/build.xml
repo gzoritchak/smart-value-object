@@ -1,0 +1,47 @@
+<project name="example" default="run">
+
+<property name="src.dir"    value="./src"/>
+<property name="object.dir" value="./object"/>
+
+<path id="svo.classpath">
+	<fileset dir="../dist">
+        <include name="**/*.jar"/>
+    </fileset>
+</path>
+
+<path id="run.classpath">
+	<path refid="svo.classpath"/>
+	<pathelement location="${object.dir}"/> 
+</path>
+
+<target name="compile" depends="init" description="compiles the sourcecode">
+	<javac srcdir="${src.dir}" 
+	destdir="${object.dir}" 
+	classpathref="svo.classpath"/>
+</target>
+
+<target name="smartify" depends="compile" description="change VOs into SVOs">
+	<taskdef name="smartify" 
+	classname="org.bsf.smartValueObject.tools.SmartTask" 
+	classpathref="svo.classpath"/>
+
+	<smartify>
+		<fileset dir="${object.dir}">
+			<include name="**/*VO.class"/>
+		</fileset>
+	</smartify>
+</target>
+
+<target name="run" depends="smartify" description="runs a test application">
+	<java classname="Main" classpathref="run.classpath"/>
+</target>
+
+<target name="init">
+	<mkdir dir="${object.dir}"/>
+</target>
+
+<target name="clean">
+	<delete dir="${object.dir}"/>
+</target>
+
+</project>

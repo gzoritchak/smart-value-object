@@ -1,0 +1,7 @@
+<application>
+  <display-name>TestRemote</display-name>
+  <description>Test Remote Application on JBoss Server</description>
+  <module>
+    <ejb>test-jboss-SVO.jar</ejb>
+  </module>
+</application>

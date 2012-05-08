@@ -1,0 +1,90 @@
+<html>
+<head>
+<title>BSF Smart Value Object - instrumentation</title>
+<link rel="stylesheet" href="html.css" type="text/css">
+</head>
+<body>
+
+<h2><a name="instrumentation">Instrumentation</a></h2>
+
+<p>First step in using the SVO library is to instrument the Value Objects. This
+is currently done by an ant task called <a
+href="javadoc/org/bsf/smartValueObject/tools/SmartTask.html">SmartTask</a>, we 
+don't provide a solution to do runtime modification yet. Performing the 
+modification on compiletime has the advantage of leaving out all classloader 
+problems that might occur on runtime.
+
+<p>The main changes carried out are (refer to the <a
+href="implementation.html">implementation</a> section for a detailed
+description):
+
+<ul>
+<li>the new class implements <a
+href="javadoc/org/bsf/smartValueObject/Versionable.html">org.bsf.smartValueObject.Versionable</a></li>
+<li>all write access to fields trigger updates of the internal state
+(modified...)</li>
+<li>assigments to fields of type java.util.{Collection,Map,Set,List} are
+replaced by their "smart" counterparts (see <a
+href="runtime.html#containers">SmartContainers</a>)
+</li>
+</ul>
+
+<p>To let ant know that you want to use the additional bytecode modificating
+task you need to insert
+<pre>
+	&lt;taskdef name="smartify"
+	classname="org.bsf.smartValueObject.tools.SmartTask"
+	classpathref="svo.classpath" /&gt;
+</pre>
+
+<p> somewhere in your build.xml file. "svo.classpath" is a reference to a
+classpath containing bsf-SVO-client.jar, javassist.jar <em>and</em> the
+directory where the VOs to be modified reside (Javassist, a bytecode
+modification library, currently loads the classes with a classloader, this will
+change in a future version).
+
+<p> Use this task right after the compilation process, like:
+<pre>
+	&lt;target name="smartify" depends="clean, compile"&gt;
+		&lt;smartify&gt;
+			&lt;fileset dir="${build.dir}/test"&gt;
+				&lt;include name="**/*VO.class"/&gt;
+			&lt;/fileset&gt;
+		&lt;/smartify&gt;
+	&lt;/target&gt;
+</pre>
+
+<p>This would process all compiled classes ending in VO using the default
+instrumentor. The instrumentor is the class in charge of doing the actual 
+byte code modifiations. Currently there are two instrumentors, one
+implemented with <a
+href="http://www.csg.is.titech.ac.jp/~chiba/javassist/">Javassist</a> (the default) and the other with ASM.
+
+<p>You specify the instrumentor to use with the "instrumentor" - attribute of
+SmartTask:
+<pre>
+	&lt;smartify instrumentor="org.bsf.smartValueObject.tools.ASMInstrumentor"&gt;
+	...
+	&lt;/smartify&gt;
+</pre>
+
+<p>This would choose the bytecode modifier based on <a
+href="http://asm.objectweb.org">Objectweb's ASM library</a>.
+Its main advantage compared to the Javassist-specific implementation is the
+small size of the asm jar-file (25K).
+
+<p>After the successful instrumentation the original class gets overwritten with the modified version.
+
+<p>Have a look at the examples-dir for a short demonstration.
+
+<hr/>
+<table width="100%">
+<tr>
+    <td width="40%" align="left"><a href="overview.html">back</a></td>
+    <td width="20%" align="center"><a href="index.html">index</a></td>
+    <td width="40%" align="right"><a href="runtime.html">next</a></td>
+</tr>
+</table>
+
+</body>
+</html>
