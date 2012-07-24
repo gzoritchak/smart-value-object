@@ -1,6 +1,6 @@
 <!doctype html>
 <html>
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>Smart-value-object by gzoritchak</title>
@@ -12,66 +12,106 @@
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header>
+</head>
+<body>
+<div class="wrapper">
+    <header>
         <h1 class="header">Smart-value-object</h1>
-        <p class="header">Tracking changes on the client side</p>
+        <!--<p class="header">Tracking changes on the client side</p>-->
 
         <ul>
-          <li class="download"><a class="buttons" href="https://github.com/gzoritchak/smart-value-object/zipball/master">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/gzoritchak/smart-value-object/tarball/master">Download TAR</a></li>
-          <li><a class="buttons github" href="https://github.com/gzoritchak/smart-value-object">View On GitHub</a></li>
+            <li class="download"><a class="buttons"
+                                    href="https://github.com/gzoritchak/smart-value-object/zipball/master">Download
+                ZIP</a></li>
+            <li class="download"><a class="buttons"
+                                    href="https://github.com/gzoritchak/smart-value-object/tarball/master">Download
+                TAR</a></li>
+            <li><a class="buttons github" href="https://github.com/gzoritchak/smart-value-object">View On GitHub</a>
+            </li>
         </ul>
+        <a href="index.html">Introduction</a>
+        <br><a href="overview.html">Overview</a>
+        <br><a href="instrumentation.html">Instrumentation</a>
+        <br><a href="runtime.html">Runtime usage</a>
+        <br><a href="mediators.html">Mediators</a>
+        <br><a href="implementation.html">Implementation notes</a>
+        <br><a href="references.html">References</a>
+        <br><a href="javadoc/index.html">Javadoc</a>
 
-        <p class="header">This project is maintained by <a class="header name" href="https://github.com/gzoritchak">gzoritchak</a></p>
+        <br>
+        <br>
 
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/gzoritchak">gzoritchak</a>
+        </p>
+    </header>
+    <section>
+        <h2>Introduction</h2>
 
-      </header>
-      <section>
-        <h3>Welcome to GitHub Pages.</h3>
+<p>To avoid the overhead of remote method invocation, J2EE application often
+adopt the Value Object (now called 'Transfer Object') Pattern (<a
+href="http://java.sun.com/blueprints/corej2eepatterns/Patterns/TransferObject.html">J2EE
+blueprints</a>). The client receives just a copy of the actual stored data,
+which can then used without generating additional network traffic. 
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>If the client needs to make changes on this object, the application can use
+the "Updatable Transfer Objects" strategy as described in Sun's pattern
+catalogue.
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+<p>However, this introduces additional complexity: <cite>"There is an impact on
+the design using the updatable Transfer Objects in terms of update propagation,
+synchronization, and version control."</cite> (Sun).
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>In other words, the developer must take care of a mechanism on the server
+side to apply changes in the TOs back to the storage tier. If serveral clients
+access the same data, he will also need to implement a locking mechanism to
+avoid inconsistencies.
 
-<h3>Designer Templates</h3>
+<p>There are several possibilites to solve this problems:
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<ul>
+<li>Handcoding these mechanisms for each project</li>
+<li>Use a code generator to do this task (cf. <a
+href="http://carrierwave.sourceforge.net/">Carrierwave</a>)</li>
+<li>Add version control by AOP / bytecode processing</li>
+</ul>
 
-<h3>Rather Drive Stick?</h3>
+<p>The SVO project has adopted the latter approach to solve the problem, as
+adding behaviour by adding code to the TOs is very intrusive and error-prone.
+Code generation has its own quirks and adds another layer of complexity which
+must be dealt with.
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<p>AOP allows for a clean seperation between the aspects "data transfer" and
+"version control". However, we chose not to use AOP for the moment mainly
+because it would add yet another dependency (think remote deployement where
+size is crucial) and doesn't offer the full flexibility of "low-level" bytecode
+manipulation. 
 
-<h3>Authors and Contributors</h3>
+<p>This low-levelness is often regard as hack, but most of the 'smart stuff' is
+actually happening 'outside' the bytecode modification, so the code is easy to
+change without having to step down to bytecode level. Think of the bytecode
+modification merely as providing the 'hooks' to plug in normal, unmodified
+classes.
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<p>Ideally, these modification should be transparent to the user, i.e you code
+your TOs as before without having to worry about version control etc. On
+deployment (or on runtime), the needed functionality is automatically added and
+can be used instantly.
 
-<h3>Support or Contact</h3>
+    </section>
+</div>
+<!--[if !IE]>
+<script>fixScale(document);</script><!--<![endif]-->
+<script type="text/javascript">
+    var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+    document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+    try {
+        var pageTracker = _gat._getTracker("UA-33629872-1");
+        pageTracker._trackPageview();
+    } catch (err) {
+    }
+</script>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
-      <footer>
-        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
-      </footer>
-    </div>
-    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
-		          <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("UA-33629872-1");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
-
-  </body>
+</body>
 </html>

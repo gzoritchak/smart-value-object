@@ -1,11 +1,51 @@
+<!doctype html>
 <html>
 <head>
-<title>BSF Smart Value Objects - mediators</title>
-<link rel="stylesheet" href="html.css" type="text/css">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Smart-value-object by gzoritchak</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
 </head>
 <body>
+<div class="wrapper">
+    <header>
+        <h1 class="header">Smart-value-object</h1>
+        <!--<p class="header">Tracking changes on the client side</p>-->
 
-<h1>Mediators</h1>
+        <ul>
+            <li class="download"><a class="buttons"
+                                    href="https://github.com/gzoritchak/smart-value-object/zipball/master">Download
+                ZIP</a></li>
+            <li class="download"><a class="buttons"
+                                    href="https://github.com/gzoritchak/smart-value-object/tarball/master">Download
+                TAR</a></li>
+            <li><a class="buttons github" href="https://github.com/gzoritchak/smart-value-object">View On GitHub</a>
+            </li>
+        </ul>
+        <a href="index.html">Introduction</a>
+        <br><a href="overview.html">Overview</a>
+        <br><a href="instrumentation.html">Instrumentation</a>
+        <br><a href="runtime.html">Runtime usage</a>
+        <br><a href="mediators.html">Mediators</a>
+        <br><a href="implementation.html">Implementation notes</a>
+        <br><a href="references.html">References</a>
+        <br><a href="javadoc/index.html">Javadoc</a>
+
+        <br>
+        <br>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/gzoritchak">gzoritchak</a>
+        </p>
+    </header>
+    <section>
+        <h1>Mediators</h1>
 
 <h2><a name="whataremediators">What are mediators ?</a></h2>
 
@@ -76,14 +116,21 @@ ConcurrencyException).
 Note that this only works if the container has been wrapped in a 'smart'
 container which does the actual work of flagging the objects.
 
-<hr/>
-<table width="100%">
-<tr>
-    <td width="40%" align="left"><a href="runtime.html">back</a></td>
-    <td width="20%" align="center"><a href="index.html">index</a></td>
-    <td width="40%" align="right"><a href="implementation.html">next</a></td>
-</tr>
-</table>
+    </section>
+</div>
+<!--[if !IE]>
+<script>fixScale(document);</script><!--<![endif]-->
+<script type="text/javascript">
+    var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+    document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+    try {
+        var pageTracker = _gat._getTracker("UA-33629872-1");
+        pageTracker._trackPageview();
+    } catch (err) {
+    }
+</script>
 
 </body>
 </html>

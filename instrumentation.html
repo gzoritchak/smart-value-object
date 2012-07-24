@@ -1,49 +1,91 @@
+<!doctype html>
 <html>
 <head>
-<title>BSF Smart Value Object - instrumentation</title>
-<link rel="stylesheet" href="html.css" type="text/css">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Smart-value-object by gzoritchak</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
 </head>
 <body>
+<div class="wrapper">
+    <header>
+        <h1 class="header">Smart-value-object</h1>
+        <!--<p class="header">Tracking changes on the client side</p>-->
 
-<h2><a name="instrumentation">Instrumentation</a></h2>
+        <ul>
+            <li class="download"><a class="buttons"
+                                    href="https://github.com/gzoritchak/smart-value-object/zipball/master">Download
+                ZIP</a></li>
+            <li class="download"><a class="buttons"
+                                    href="https://github.com/gzoritchak/smart-value-object/tarball/master">Download
+                TAR</a></li>
+            <li><a class="buttons github" href="https://github.com/gzoritchak/smart-value-object">View On GitHub</a>
+            </li>
+        </ul>
+        <a href="index.html">Introduction</a>
+        <br><a href="overview.html">Overview</a>
+        <br><a href="instrumentation.html">Instrumentation</a>
+        <br><a href="runtime.html">Runtime usage</a>
+        <br><a href="mediators.html">Mediators</a>
+        <br><a href="implementation.html">Implementation notes</a>
+        <br><a href="references.html">References</a>
+        <br><a href="javadoc/index.html">Javadoc</a>
 
-<p>First step in using the SVO library is to instrument the Value Objects. This
-is currently done by an ant task called <a
-href="javadoc/org/bsf/smartValueObject/tools/SmartTask.html">SmartTask</a>, we 
-don't provide a solution to do runtime modification yet. Performing the 
-modification on compiletime has the advantage of leaving out all classloader 
-problems that might occur on runtime.
+        <br>
+        <br>
 
-<p>The main changes carried out are (refer to the <a
-href="implementation.html">implementation</a> section for a detailed
-description):
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/gzoritchak">gzoritchak</a>
+        </p>
+    </header>
+    <section>
+        <h2><a name="instrumentation">Instrumentation</a></h2>
 
-<ul>
-<li>the new class implements <a
-href="javadoc/org/bsf/smartValueObject/Versionable.html">org.bsf.smartValueObject.Versionable</a></li>
-<li>all write access to fields trigger updates of the internal state
-(modified...)</li>
-<li>assigments to fields of type java.util.{Collection,Map,Set,List} are
-replaced by their "smart" counterparts (see <a
-href="runtime.html#containers">SmartContainers</a>)
-</li>
-</ul>
+        <p>First step in using the SVO library is to instrument the Value Objects. This
+            is currently done by an ant task called <a
+                    href="javadoc/org/bsf/smartValueObject/tools/SmartTask.html">SmartTask</a>, we
+            don't provide a solution to do runtime modification yet. Performing the
+            modification on compiletime has the advantage of leaving out all classloader
+            problems that might occur on runtime.
 
-<p>To let ant know that you want to use the additional bytecode modificating
-task you need to insert
+        <p>The main changes carried out are (refer to the <a
+                href="implementation.html">implementation</a> section for a detailed
+            description):
+
+        <ul>
+            <li>the new class implements <a
+                    href="javadoc/org/bsf/smartValueObject/Versionable.html">org.bsf.smartValueObject.Versionable</a>
+            </li>
+            <li>all write access to fields trigger updates of the internal state
+                (modified...)
+            </li>
+            <li>assigments to fields of type java.util.{Collection,Map,Set,List} are
+                replaced by their "smart" counterparts (see <a
+                        href="runtime.html#containers">SmartContainers</a>)
+            </li>
+        </ul>
+
+        <p>To let ant know that you want to use the additional bytecode modificating
+            task you need to insert
 <pre>
 	&lt;taskdef name="smartify"
 	classname="org.bsf.smartValueObject.tools.SmartTask"
 	classpathref="svo.classpath" /&gt;
 </pre>
 
-<p> somewhere in your build.xml file. "svo.classpath" is a reference to a
-classpath containing bsf-SVO-client.jar, javassist.jar <em>and</em> the
-directory where the VOs to be modified reside (Javassist, a bytecode
-modification library, currently loads the classes with a classloader, this will
-change in a future version).
+        <p> somewhere in your build.xml file. "svo.classpath" is a reference to a
+            classpath containing bsf-SVO-client.jar, javassist.jar <em>and</em> the
+            directory where the VOs to be modified reside (Javassist, a bytecode
+            modification library, currently loads the classes with a classloader, this will
+            change in a future version).
 
-<p> Use this task right after the compilation process, like:
+        <p> Use this task right after the compilation process, like:
 <pre>
 	&lt;target name="smartify" depends="clean, compile"&gt;
 		&lt;smartify&gt;
@@ -54,37 +96,44 @@ change in a future version).
 	&lt;/target&gt;
 </pre>
 
-<p>This would process all compiled classes ending in VO using the default
-instrumentor. The instrumentor is the class in charge of doing the actual 
-byte code modifiations. Currently there are two instrumentors, one
-implemented with <a
-href="http://www.csg.is.titech.ac.jp/~chiba/javassist/">Javassist</a> (the default) and the other with ASM.
+        <p>This would process all compiled classes ending in VO using the default
+            instrumentor. The instrumentor is the class in charge of doing the actual
+            byte code modifiations. Currently there are two instrumentors, one
+            implemented with <a
+                    href="http://www.csg.is.titech.ac.jp/~chiba/javassist/">Javassist</a> (the default) and the other
+            with ASM.
 
-<p>You specify the instrumentor to use with the "instrumentor" - attribute of
-SmartTask:
+        <p>You specify the instrumentor to use with the "instrumentor" - attribute of
+            SmartTask:
 <pre>
 	&lt;smartify instrumentor="org.bsf.smartValueObject.tools.ASMInstrumentor"&gt;
 	...
 	&lt;/smartify&gt;
 </pre>
 
-<p>This would choose the bytecode modifier based on <a
-href="http://asm.objectweb.org">Objectweb's ASM library</a>.
-Its main advantage compared to the Javassist-specific implementation is the
-small size of the asm jar-file (25K).
+        <p>This would choose the bytecode modifier based on <a
+                href="http://asm.objectweb.org">Objectweb's ASM library</a>.
+            Its main advantage compared to the Javassist-specific implementation is the
+            small size of the asm jar-file (25K).
 
-<p>After the successful instrumentation the original class gets overwritten with the modified version.
+        <p>After the successful instrumentation the original class gets overwritten with the modified version.
 
-<p>Have a look at the examples-dir for a short demonstration.
-
-<hr/>
-<table width="100%">
-<tr>
-    <td width="40%" align="left"><a href="overview.html">back</a></td>
-    <td width="20%" align="center"><a href="index.html">index</a></td>
-    <td width="40%" align="right"><a href="runtime.html">next</a></td>
-</tr>
-</table>
+        <p>Have a look at the examples-dir for a short demonstration.
+    </section>
+</div>
+<!--[if !IE]>
+<script>fixScale(document);</script><!--<![endif]-->
+<script type="text/javascript">
+    var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+    document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+    try {
+        var pageTracker = _gat._getTracker("UA-33629872-1");
+        pageTracker._trackPageview();
+    } catch (err) {
+    }
+</script>
 
 </body>
 </html>
