@@ -1,0 +1,118 @@
+<html>
+<head>
+<title>BSF Smart Value Object - runtime usage</title>
+<link rel="stylesheet" href="html.css" type="text/css">
+</head>
+<body>
+
+<h2><a name="basicusage">Basic usage</a></h2>
+
+<p>Once your classes are properly modified, you can test their new features.
+The objects will become versionable, that is you can make inquiries
+whether the object has been modified, created or deleted. The modification
+happens transparently, there should be no visible changement of the object's
+behaviour (after all, VOs shouldn't have any behaviour).
+
+<p>While it would be possible to do this by casting the object to its new 
+interface "Versionable" to expose its API, the preferred method is to use the 
+static methods of the helper class SmartAccess which does all this for you. An
+example for its usage:
+
+<pre>
+	TestVO test = new TestVO();
+	// reset version information
+	SmartAccess.reset(test);
+	// modify object
+	test.setName("test");
+	// check for modification
+	if (SmartAccess.isDirty(test)) {
+		System.out.println("object has been modified");
+	}
+</pre>
+
+A call to the object's setter "setName" should change the object's state to
+"modified", as the setter will most certainly overwrite the field containing
+the name.
+
+<p>Other useful methods include:
+
+<ul>
+<li>boolean SmartAccess.isVersionable(Object o): verifies if this object is
+versionable</li>
+<li>boolean SmartAccess.sameVersion(Object o1, Object o2): checks if the two
+objects share the same version number</li>
+<li>boolean SmartAccess.isCreated(Object o): verifies if the object has been
+created by the user</li>
+<li>boolean SmartAccess.isDeleted(Object o): verifies if the object has been
+deleted by the user</li>
+</ul>
+
+<p>For the full documentation, refer to the javadoc page: <a
+href="javadoc/org/bsf/smartValueObject/SmartAccess.html">org.bsf.smartValueObject.SmartAccess</a>.
+
+<h2><a name="containers">Containers</a></h2>
+
+<p>In many cases your VO will contain a collection of other objects, normally
+implemented with a class of the Java collection framework.
+
+<p>Now, it would be interesting if you could track changes in these containers,
+e.g. know if there have been any additions or deletions in the container. If
+the object in the container has been modified (not deleted!) and is a
+versionable object, there is no need for further support by the library as it's
+already been taken care of by the bytecode modification. 
+
+<p>But as deleted objects would be garbage collected, you have no way to "know"
+that the object is no longer in the container, except if you carry a copy of
+the old state around or implement custom containers to do this.
+
+<p>The modified transfer objects do this automatically for you: every time you
+have an assignment like
+
+<pre>
+	Collection c = new ArrayList();
+</pre>
+
+in your code, the assignment will be intercepted on runtime and replaced
+with a "smart" container. These are wrapper around common interfaces
+(java.util.Collection, Map, Set, List) that take care of the versioning.</p>
+
+<p>The condition for this to work is that you assign only to interfaces, not
+to concrete types. Otherwise the interception will fail and you end up
+with a normal container.
+
+<p>The main difference with respect to the "normal" containers is that newly
+added objects get
+a 'created' flag while deleted objects are flagged as, 'deleted'. Once
+deleted they still remain in the container but are no longer visible to the
+application. That means all methods invoked on the container will behave like
+the objects had really been deleted.
+
+<center><img src="scontainer_diagram.png" alt="Smart Container
+diagram" /></center>
+
+<p>Again, to get this 'hidden' information you need to use SmartAccess. It
+offers the following methods to work with smart containers:
+
+<pre>
+	SmartAccess.isSmartContainer(Object o);  // checks if object is a smart container
+	SmartAccess.isContainerModified(Object o);  // checks if objects in the container have been modified
+	SmartAccess.deletedIterator(Object o);  // gets an iterator for all deleted objects
+	SmartAccess.createdIterator(Object o);  // gets an iterator for all added objects
+</pre>
+
+<p>In a client/server scenario the server can use this method to do a quick
+check if updates to the storage tier are necessary. The component which does
+this checks acts as a mediator between the versioned value objects and the
+backing storage.
+
+<hr/>
+<table width="100%">
+<tr>
+    <td width="40%" align="left"><a href="instrumentation.html">back</a></td>
+    <td width="20%" align="center"><a href="index.html">index</a></td>
+    <td width="40%" align="right"><a href="mediators.html">next</a></td>
+</tr>
+</table>
+
+</body>
+</html>
