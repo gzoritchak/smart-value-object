@@ -1,0 +1,89 @@
+<html>
+<head>
+<title>BSF Smart Value Objects - mediators</title>
+<link rel="stylesheet" href="html.css" type="text/css">
+</head>
+<body>
+
+<h1>Mediators</h1>
+
+<h2><a name="whataremediators">What are mediators ?</a></h2>
+
+<p>The functions as described previously are not really useful on their own:
+they rather form the groundwork for a higher layer which performs the actual 
+modifications according to the objects' state.
+
+<p>We decided to use the mediator pattern as mentioned in the <a
+href="http://ftpna2.bea.com/pub/downloads/commonj/Next-Gen-Data-Programming-Whitepaper.pdf">SDO whitepaper</a>. 
+Each mediator is specific to the used backend, so there could
+be an EJB mediator if the value objects have entity beans as counterparts, or
+an HibernateMediator which would transfer the version information in calls to
+the hibernate persistence layer. The only implemented mediator for now is the 
+<a
+href="javadoc/org/bsf/smartValueObject/demo/DemoMediator.html">DemoMediator</a>,
+ which is used by the <a
+ href="http://www.bs-factory.com/jboss/svoDemo/webstart/svoDemoApp.jnlp">
+ Webstart Demo application</a>.
+
+<p>The application only sees the <a
+href="javadoc/org/bsf/smartValueObject/mediator/Mediator.html">mediator
+interface</a>, which provides very basic operations to manipulate the graph.
+Using a prototype VO, you ask the mediator to give you the complete graph:
+
+<pre>
+	TestVO prototype = new TestVO();
+	prototype.setId(new Long(0));
+	TestVO result = myMediator.getGraph(protoype);
+</pre>
+
+<p>This would look for an object with the primary key '0' and populate a value
+object with the corresponding data.  Once you have obtained the graph
+, you do your modifications and call updateGraph to let the mediator apply 
+your changes:
+
+<pre>
+	// perform a modification
+	result.addObject(new TestVO());
+	// and update
+	myMediator.updateGraph(result);
+</pre>
+
+<p>As the object is versioned, the mediator can use optimistic locking to detect
+concurrent access and inform the client accordingly (via a
+ConcurrencyException).
+
+<pre>
+	TestVO test = new TestVO();
+	test.setId(new Long(0));
+	TestVO result = myMediator.getGraph(test);
+	result.setName("new");
+	myMediator.updateGraph(result);
+	result.setName("new2");
+	// try to do a second update without obtaining the last version first
+	myMediator.updateGraph(result); // will throw ConcurrencyException
+</pre>
+
+<p>To delete objects, simply remove them from the container:
+
+<pre>
+	// ...
+	TestVO result = myMediator.getGraph(prototype);
+	result.getCollection().clear();	// or remove(Object o) etc.
+	myMediator.updateGraph(result);
+</pre>
+
+<p>Adding objects works in a similar way, just add objects to the container.
+Note that this only works if the container has been wrapped in a 'smart'
+container which does the actual work of flagging the objects.
+
+<hr/>
+<table width="100%">
+<tr>
+    <td width="40%" align="left"><a href="runtime.html">back</a></td>
+    <td width="20%" align="center"><a href="index.html">index</a></td>
+    <td width="40%" align="right"><a href="implementation.html">next</a></td>
+</tr>
+</table>
+
+</body>
+</html>
