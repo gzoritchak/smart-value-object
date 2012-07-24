@@ -1,7 +1,7 @@
 smart-value-object
 ==================
 
-This is a very old project which goal is to track modification on a graph of object. 
+This is a quite old project (2004) which goal is to track modification on a graph of object. 
 Initialy hosted in [object web] (http://forge.ow2.org/forum/forum.php?forum_id=365 "Smart Value Object on Object Web") I put here as an archive. Initial presentation : 
 
 The Smart Value Object allows server components to track client-side modification of business objects in a rich client/J2EE server environment, by using the latest features offered by bytecode processing tools.
